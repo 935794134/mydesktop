@@ -85,6 +85,10 @@ def read_full_data_json():
         full_data_json = json.load(f)
     return full_data_json
 
+def read_sittings(sittting_name):
+    full_data_json = read_full_data_json()
+    return full_data_json["sittings"][sittting_name]
+
 def read_card_infor(card_index):
     full_data_json = read_full_data_json()
     for card in full_data_json["cards"]:
@@ -120,10 +124,11 @@ def build_card(card_index):
 
     card_background = QWidget(card)
     card_background.setObjectName("card_background")
+    background_color=read_sittings("background_rgb")+","+read_sittings("background_opacity")
     card_background.setStyleSheet(
         f"""
         #card_background {{
-            background-color: {};
+            background-color: rgba({background_color});
             border-radius: 10px;
         }}
         """

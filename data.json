@@ -1,8 +1,8 @@
 {
-    "sttings":{
+    "sittings":{
         "title_visible": true,
         "card_background_visible": true,
-        "background_color":"rgba(0, 0, 0, 0.6)",
+        "background_rgb": "0, 0, 0",
         "background_opacity":"0.6"
     },
     "cards": [
