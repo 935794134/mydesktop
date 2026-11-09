@@ -1,9 +1,8 @@
 {
-    "sittings":{
-        "title_visible": true,
-        "card_background_visible": true,
+    "sittings": {
+        "title_visible": false,
         "background_rgb": "0, 0, 0",
-        "background_opacity":"0.6"
+        "background_opacity": "0.6"
     },
     "cards": [
         {
@@ -13,7 +12,7 @@
             "width": 340,
             "height": 150,
             "x": 600,
-            "y": 345
+            "y": 344
         },
         {
             "index": 2,
@@ -22,7 +21,7 @@
             "width": 340,
             "height": 150,
             "x": 500,
-            "y": 219
+            "y": 223
         },
         {
             "index": 3,

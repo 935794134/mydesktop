@@ -55,22 +55,22 @@ def change_choice_card():
 def card_go_up():
     global choicing_card_index
     write_card(choicing_card_index,"y",read_card_infor(choicing_card_index)["y"]-ratelist[rate_index])
-    builded_card[choicing_card_index-1].move(read_card_infor(choicing_card_index)["x"],read_card_infor(choicing_card_index)["y"])
+    builded_cards[choicing_card_index-1].move(read_card_infor(choicing_card_index)["x"],read_card_infor(choicing_card_index)["y"])
 
 def card_go_down():
     global choicing_card_index
     write_card(choicing_card_index,"y",read_card_infor(choicing_card_index)["y"]+ratelist[rate_index])
-    builded_card[choicing_card_index-1].move(read_card_infor(choicing_card_index)["x"],read_card_infor(choicing_card_index)["y"])
+    builded_cards[choicing_card_index-1].move(read_card_infor(choicing_card_index)["x"],read_card_infor(choicing_card_index)["y"])
 
 def card_go_left():
     global choicing_card_index
     write_card(choicing_card_index,"x",read_card_infor(choicing_card_index)["x"]-ratelist[rate_index])
-    builded_card[choicing_card_index-1].move(read_card_infor(choicing_card_index)["x"],read_card_infor(choicing_card_index)["y"])
+    builded_cards[choicing_card_index-1].move(read_card_infor(choicing_card_index)["x"],read_card_infor(choicing_card_index)["y"])
 
 def card_go_right():
     global choicing_card_index
     write_card(choicing_card_index,"x",read_card_infor(choicing_card_index)["x"]+ratelist[rate_index])
-    builded_card[choicing_card_index-1].move(read_card_infor(choicing_card_index)["x"],read_card_infor(choicing_card_index)["y"])
+    builded_cards[choicing_card_index-1].move(read_card_infor(choicing_card_index)["x"],read_card_infor(choicing_card_index)["y"])
 
 ratelist = [1, 5, 10, 20, 50]
 rate_index = 0
@@ -78,6 +78,12 @@ def change_moving_rate():
     global rate_index
     rate_index = (rate_index + 1) % len(ratelist)
     rate_change_button.setText(f"Moving Rate:{ratelist[rate_index]}")
+
+def change_card_title_visiable():
+    now_sitting_to=not(read_sitting("title_visible"))
+    write_sitting("title_visible",now_sitting_to)
+    for card in builded_cards:
+        card.findChild(QLabel, "card_title").setVisible(now_sitting_to)
     
 #json读写
 def read_full_data_json():
@@ -85,9 +91,11 @@ def read_full_data_json():
         full_data_json = json.load(f)
     return full_data_json
 
-def read_sittings(sittting_name):
-    full_data_json = read_full_data_json()
-    return full_data_json["sittings"][sittting_name]
+def read_sittings():
+    return read_full_data_json()["sittings"]
+
+def read_sitting(sittting_name):
+    return read_sittings()[sittting_name]
 
 def read_card_infor(card_index):
     full_data_json = read_full_data_json()
@@ -104,6 +112,13 @@ def write_card(card_index,info_name,new_value):
     card[info_name]=new_value
     full_data_json = read_full_data_json()
     full_data_json["cards"][card_index-1]=card
+    write_full_json(full_data_json)
+
+def write_sitting(sitting_name,value):
+    sittings=read_sittings()
+    sittings[sitting_name]=value
+    full_data_json = read_full_data_json()
+    full_data_json["sittings"]=sittings
     write_full_json(full_data_json)
 
 #绘制card
@@ -124,7 +139,7 @@ def build_card(card_index):
 
     card_background = QWidget(card)
     card_background.setObjectName("card_background")
-    background_color=read_sittings("background_rgb")+","+read_sittings("background_opacity")
+    background_color=read_sitting("background_rgb")+","+read_sitting("background_opacity")
     card_background.setStyleSheet(
         f"""
         #card_background {{
@@ -136,8 +151,9 @@ def build_card(card_index):
     card_layout.addWidget(card_background)
     
     card_title = QLabel(card_data["title"],card_background)
+    card_title.setObjectName("card_title")
     card_title.setStyleSheet("color:rgba(232, 234, 240, 0.55); background: transparent;")
-    card_title.setVisible(card_data["title"] != "")
+    card_title.setVisible(read_sitting("title_visible"))
 
     card_info = QLabel(card_data["info"], card_background)
     card_info.setStyleSheet("color: #F5F6FA; background: transparent;")
@@ -183,6 +199,11 @@ choicing_card_change_button = QPushButton(f"Choicing Card:{choicing_card_index}"
 main_window_layout.addWidget(choicing_card_change_button,3,1)
 choicing_card_change_button.clicked.connect(change_choice_card)
 
+#设置按钮
+change_card_title_visiable_button = QPushButton("change card title visiable")
+main_window_layout.addWidget(change_card_title_visiable_button)
+change_card_title_visiable_button.clicked.connect(change_card_title_visiable)
+
 main_window.show()
 
 #桌面card的名称列表，用于记录有了哪些card
@@ -190,13 +211,11 @@ cards=[]
 for card in read_full_data_json()["cards"]:
     cards.append(card["index"])
 
-builded_card=[]
+builded_cards=[]
 for card_index in cards:
     card = build_card(card_index)
     card.show()
     to_buttom(card)
-    builded_card.append(card)
-
-
+    builded_cards.append(card)
 
 sys.exit(main_process.exec())
