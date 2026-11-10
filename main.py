@@ -3,13 +3,17 @@ import sys
 import ctypes
 from ctypes import wintypes
 from pathlib import Path
-from PySide6.QtWidgets import QApplication,QWidget, QLabel, QGridLayout,QPushButton
+from PySide6.QtWidgets import QApplication,QWidget, QLabel, QGridLayout,QPushButton,QSystemTrayIcon,QMenu
 from PySide6.QtCore import Qt
+from PySide6.QtGui import QIcon
+
 
 #card--->桌面看的
 #window--->管理card的窗口
 
-path_json = Path(__file__).parent / "data.json"
+path=Path(__file__).parent
+path_json = path / "data.json"
+path_ico = path / "icon.ico"
 
 #Win32 的常量
 HWND_BOTTOM = 1
@@ -45,6 +49,13 @@ main_window.resize(window_width, window_height)
 
 main_window_layout = QGridLayout(main_window)
 main_window_layout.setContentsMargins(10, 10, 10, 10)
+
+main_process.setQuitOnLastWindowClosed(False)
+
+#创建后台托盘图标
+back_icon = QSystemTrayIcon(main_window)
+back_icon.setIcon(QIcon(str(path_ico)))
+back_icon.setToolTip("My Desktop")
 
 choicing_card_index = 1
 def change_choice_card():
@@ -174,6 +185,10 @@ def to_buttom(card):
     hwnd = int(card.winId())
     user32.SetWindowPos(hwnd, HWND_BOTTOM, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE)
 
+def quit_back():
+    back_icon.hide()
+    main_process.quit()
+
 #创建按钮
 up_button = QPushButton("↑", main_window)
 main_window_layout.addWidget(up_button,0,1)
@@ -196,15 +211,21 @@ main_window_layout.addWidget(rate_change_button,1,1)
 rate_change_button.clicked.connect(change_moving_rate)
 
 choicing_card_change_button = QPushButton(f"Choicing Card:{choicing_card_index}", main_window)
-main_window_layout.addWidget(choicing_card_change_button,3,1)
+main_window_layout.addWidget(choicing_card_change_button,2,2)
 choicing_card_change_button.clicked.connect(change_choice_card)
 
 #设置按钮
 change_card_title_visiable_button = QPushButton("change card title visiable")
-main_window_layout.addWidget(change_card_title_visiable_button)
+main_window_layout.addWidget(change_card_title_visiable_button,0,2)
 change_card_title_visiable_button.clicked.connect(change_card_title_visiable)
 
 main_window.show()
+
+back_list=QMenu()
+quit_action=back_list.addAction("退出")
+back_icon.setContextMenu(back_list)
+back_icon.show()
+quit_action.triggered.connect(quit_back)
 
 #桌面card的名称列表，用于记录有了哪些card
 cards=[]
